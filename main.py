@@ -12,7 +12,7 @@ from functools import wraps
 import os
 from dotenv import load_dotenv
 
-load_dotenv("/Users/patrick/Downloads/blog-with-users-start/.env")
+load_dotenv(".env")
 SECRET_KEY = os.getenv("My_key")
 app = Flask(__name__)
 app.config['SECRET_KEY'] = SECRET_KEY
