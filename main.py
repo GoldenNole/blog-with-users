@@ -1,4 +1,4 @@
-from flask import Flask, render_template, redirect, url_for, flash, abort
+from flask import Flask, render_template, redirect, url_for, flash, abort, request
 from flask_bootstrap import Bootstrap
 from flask_ckeditor import CKEditor
 from datetime import date
@@ -10,7 +10,9 @@ from forms import CreatePostForm, RegisterForm, LoginForm, CommentForm
 from flask_gravatar import Gravatar
 from functools import wraps
 import os
-
+import smtplib
+my_email = os.environ.get("EMAIL")
+password = os.environ.get("EMAIL_PASS")
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.environ.get("SECRET_KEY")
 ckeditor = CKEditor(app)
@@ -157,10 +159,26 @@ def about():
     return render_template("about.html")
 
 
-@app.route("/contact")
+@app.route('/contact.html', methods=["GET", "POST"])
 def contact():
-    return render_template("contact.html")
-
+    if request.method == "POST":
+        data = request.form
+        message = f""" 
+        Name: {data['name']}
+        Email: {data['email']}
+        Phone: {data['phone']}
+        Message: {data['message']}"""
+        with smtplib.SMTP("smtp.gmail.com", 587) as connection:
+            connection.starttls()
+            connection.login(user=my_email, password=password)
+            connection.sendmail(from_addr=my_email,
+                                to_addrs="prstokes37@icloud.com",
+                                msg=f"Subject:New Message!!\n\n{message}"
+                                )
+        return render_template("contact.html", msg_sent=True)
+    else:
+        header = "Contact Me"
+        return render_template("contact.html", msg_sent=False)
 
 @app.route("/new-post", methods=["GET", "POST"])
 @admin_only
